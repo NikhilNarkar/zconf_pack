@@ -1,0 +1,25 @@
+specVersion: "4.0"
+metadata:
+  name: zconfpack
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target:
+          destination: BAS_CONNECT_NEW
+          url: https://my433488.s4hana.cloud.sap
+          scp: true
+          authenticationType: reentranceTicket
+        app:
+          name: ZCONF_PACK
+          package: ZPP_PACKING_CNF
+          transport: EGFK902479
+        exclude:
+          - /test/
+          - /localService/
