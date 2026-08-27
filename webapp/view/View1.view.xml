@@ -91,6 +91,19 @@ value="{local>/selection/headerPlant}"
 editable="false"
 width="5.5rem" />
 </VBox>
+
+
+
+<VBox id="_IDGenVBox7" width="20rem" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+    <Label id="_IDGenLabel6" text="Contractor Name" />
+    <Input id="_IDGenInput8"
+        value="{local>/selection/contractorName}"
+        editable="true"
+        showValueHelp="true"
+        valueHelpRequest="onContractorValueHelp"
+        width="20rem" />
+</VBox>
+
 </HBox>
 </content>
 

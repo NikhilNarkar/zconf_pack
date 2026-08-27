@@ -44,7 +44,8 @@ sap.ui.define([
                     salesOrder: "",
                     productionOrder: "",
                     lotNumber: "",
-                    headerPlant: ""
+                    headerPlant: "",
+                    contractorName: ""
                 },
                 scannedBatches: []
             });
@@ -52,6 +53,7 @@ sap.ui.define([
             this.getView().setModel(oLocalModel, "local");
             this._oCurrentBatchRowContext = null;
             this._oBatchValueHelpDialog = null;
+            this._oContractorValueHelpDialog = null;
         },
 
         onExportExcel: function () {
@@ -138,6 +140,7 @@ sap.ui.define([
                 oLocalModel.setProperty("/selection/productionOrder", "");
                 oLocalModel.setProperty("/selection/lotNumber", "");
                 oLocalModel.setProperty("/selection/headerPlant", "");
+                oLocalModel.setProperty("/selection/contractorName", "");
                 oLocalModel.setProperty("/scannedBatches", []);
                 return;
             }
@@ -149,7 +152,7 @@ sap.ui.define([
         _fetchReservationHeader: async function (sReservation) {
             var oLocalModel = this.getView().getModel("local");
             var sServiceUrl =
-                "/sap/opu/odata4/sap/zsb_trnansfer_posting/srvd_a2x/sap/zsd_trnasfer_posting/0001/ZI_GET_RES_HDR" +
+                "/sap/opu/odata4/sap/zsb_pack_conf/srvd_a2x/sap/zsd_pack_conf/0001/ZI_GET_RES_HDR" +
                 "?$filter=Reservation eq '" + encodeURIComponent(sReservation) + "'";
 
             try {
@@ -172,6 +175,7 @@ sap.ui.define([
                     oLocalModel.setProperty("/selection/productionOrder", "");
                     oLocalModel.setProperty("/selection/lotNumber", "");
                     oLocalModel.setProperty("/selection/headerPlant", "");
+                    oLocalModel.setProperty("/selection/contractorName", "");
                     return;
                 }
 
@@ -181,6 +185,7 @@ sap.ui.define([
                 oLocalModel.setProperty("/selection/productionOrder", oHeader.prod_order || "");
                 oLocalModel.setProperty("/selection/lotNumber", oHeader.YY1_LotNumber2_ORD || "");
                 oLocalModel.setProperty("/selection/headerPlant", oHeader.plant || "");
+                oLocalModel.setProperty("/selection/contractorName", oHeader.master_name || "");
                 oLocalModel.refresh(true);
 
             } catch (oError) {
@@ -188,6 +193,7 @@ sap.ui.define([
                 oLocalModel.setProperty("/selection/productionOrder", "");
                 oLocalModel.setProperty("/selection/lotNumber", "");
                 oLocalModel.setProperty("/selection/headerPlant", "");
+                oLocalModel.setProperty("/selection/contractorName", "");
                 console.error("Reservation header fetch error:", oError);
                 MessageBox.error("Failed to fetch reservation header details");
             }
@@ -327,7 +333,7 @@ sap.ui.define([
         }
 
         var sServiceUrl =
-            "/sap/opu/odata4/sap/zsb_trnansfer_posting/srvd_a2x/sap/zsd_trnasfer_posting/0001/ZI_GET_BATCHES_311E";
+            "/sap/opu/odata4/sap/zsb_pack_conf/srvd_a2x/sap/zsd_pack_conf/0001/ZI_GET_BATCHES_311E";
 
         if (aFilters.length) {
             sServiceUrl += "?$filter=" + aFilters.join(" and ");
@@ -748,7 +754,7 @@ sap.ui.define([
             var sFilter = "$filter=" + aFilters.join(" and ");
 
             var sServiceUrl =
-                "/sap/opu/odata4/sap/zsb_trnansfer_posting/srvd_a2x/sap/zsd_trnasfer_posting/0001/ZI_GET_BATCHES_311E?" +
+                "/sap/opu/odata4/sap/zsb_pack_conf/srvd_a2x/sap/zsd_pack_conf/0001/ZI_GET_BATCHES_311E?" +
                 sFilter;
 
             try {
@@ -1082,6 +1088,8 @@ sap.ui.define([
             }
         },
 
+        
+
         onNew: function () {
             var oView = this.getView();
             var oLocalModel = oView.getModel("local");
@@ -1153,7 +1161,114 @@ sap.ui.define([
             });
         },
 
+        onContractorValueHelp: function () {
+    var oView = this.getView();
+    var oLocalModel = oView.getModel("local");
+    var sHeaderPlant = oLocalModel.getProperty("/selection/headerPlant") || "";
 
+    if (!sHeaderPlant) {
+        MessageBox.warning("Please select a valid reservation to populate the Header Plant first.");
+        return;
+    }
+
+    if (!this._oContractorValueHelpDialog) {
+        this._oContractorValueHelpDialog = new ValueHelpDialog({
+            title: "Select Contractor Name",
+            supportMultiselect: false,
+            supportRanges: false,
+            key: "MasterName",
+            descriptionKey: "MasterName",
+            ok: this._onContractorValueHelpOk.bind(this),
+            cancel: function () {
+                this._oContractorValueHelpDialog.close();
+            }.bind(this)
+        });
+
+        oView.addDependent(this._oContractorValueHelpDialog);
+    }
+
+    var oDialog = this._oContractorValueHelpDialog;
+
+    oDialog.getTableAsync().then(function (oTable) {
+        oTable.setModel(oView.getModel()); // Assumes default OData model
+
+        if (oTable.bindRows) {
+            oTable.destroyColumns();
+
+            oTable.addColumn(new UIColumn({
+                label: new Label({ text: "Master Name" }),
+                template: new Text({ text: "{MasterName}" })
+            }));
+            oTable.addColumn(new UIColumn({
+                label: new Label({ text: "Operation" }),
+                template: new Text({ text: "{Operation}" })
+            }));
+            oTable.addColumn(new UIColumn({
+                label: new Label({ text: "Plant" }),
+                template: new Text({ text: "{Plant}" })
+            }));
+            // oTable.addColumn(new UIColumn({
+            //     label: new Label({ text: "Work Center" }),
+            //     template: new Text({ text: "{WorkCenter}" })
+            // }));
+
+            // Build dynamic filters based on requirements
+            var aFilters = [
+                new Filter("Plant", FilterOperator.EQ, sHeaderPlant),
+                new Filter({
+                    filters: [
+                        new Filter("Operation", FilterOperator.EQ, "SET PACKIN"),
+                        new Filter("Operation", FilterOperator.EQ, "BOX PACKIN"),
+                        new Filter("Operation", FilterOperator.EQ, "CUT TO PAC")
+                    ],
+                    and: false // Logical OR between operations
+                })
+            ];
+
+            oTable.bindRows({
+                path: "/ZR_WORK_MASTER_MAP",
+                filters: aFilters
+            });
+        }
+
+        oDialog.update();
+        oDialog.open();
+    }.bind(this));
+},
+
+_onContractorValueHelpOk: function () {
+    var oDialog = this._oContractorValueHelpDialog;
+    var oTable = oDialog.getTable();
+    var oSelectedContext = null;
+
+    if (oTable.getSelectedIndices) {
+        var aSelectedIndices = oTable.getSelectedIndices();
+        if (aSelectedIndices && aSelectedIndices.length > 0) {
+            oSelectedContext = oTable.getContextByIndex(aSelectedIndices[0]);
+        }
+    } else if (oTable.getSelectedItem) {
+        var oSelectedItem = oTable.getSelectedItem();
+        if (oSelectedItem) {
+            oSelectedContext = oSelectedItem.getBindingContext();
+        }
+    }
+
+    if (!oSelectedContext) {
+        MessageToast.show("Please select a contractor");
+        return;
+    }
+
+    var oSelectedData = oSelectedContext.getObject();
+    var oLocalModel = this.getView().getModel("local");
+
+    // Set selected Master Name into local model
+    oLocalModel.setProperty("/selection/contractorName", oSelectedData.MasterName || "");
+
+    oDialog.close();
+    MessageToast.show("Contractor selected successfully");
+},
+
+    
         onSubmit: function () {
             var oView = this.getView();
             var oLocalModel = oView.getModel("local");
@@ -1233,7 +1348,7 @@ sap.ui.define([
             var oPayload = {
                 "Reservation": sReservation,
                 "PostingDate": sFormattedDate,
-              
+              "ContractorName": oSelection.contractorName,
                 "_Item": aItemsPayload
             };
 
