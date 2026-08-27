@@ -1349,6 +1349,8 @@ _onContractorValueHelpOk: function () {
                 "Reservation": sReservation,
                 "PostingDate": sFormattedDate,
               "ContractorName": oSelection.contractorName,
+              "ProdOrd": oSelection.productionOrder,
+              "LotNum":oSelection.lotNumber,
                 "_Item": aItemsPayload
             };
 
