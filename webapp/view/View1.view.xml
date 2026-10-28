@@ -272,7 +272,7 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
                     liveChange=".onIssuedQtyChange"
                     change=".onIssuedQtyChange" />
 
-                <Text id="_IDGenText16" text="{local>uom}" />
+                <!-- <Text id="_IDGenText16" text="{local>uom}" /> -->
 
                 <Input id="_IDGenInput7"
                     value="{local>issueLocation}"
