@@ -92,15 +92,13 @@ editable="false"
 width="5.5rem" />
 </VBox>
 
-
-
 <VBox id="_IDGenVBox7" width="20rem" class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
     <Label id="_IDGenLabel6" text="Contractor Name" />
     <Input id="_IDGenInput8"
         value="{local>/selection/contractorName}"
         editable="true"
         showValueHelp="true"
-        valueHelpRequest="onContractorValueHelp"
+        valueHelpRequest=".onContractorValueHelp"
         width="20rem" />
 </VBox>
 
@@ -111,7 +109,7 @@ width="5.5rem" />
 
 <!-- Information -->
 <MessageStrip id="_IDGenMessageStrip"
-text="Enter reservation number to load items. Scan or enter batch to auto-fill issued quantity, unit, and issue location."
+text="Enter reservation number to load items. Scan or enter batch to auto-fill Qty To Issue and unit. Qty To Issue cannot exceed Pending Qty."
 type="Information"
 showIcon="true"
 class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
@@ -120,7 +118,7 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
 <Panel id="_IDGenPanel1"
     expandable="false"
     class="sapUiNoContentPadding"
-    headerText="Reservation Items"> 
+    headerText="Reservation Items">
 
 <content>
 <Table
@@ -147,15 +145,12 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
                 icon="sap-icon://delete"
                 type="Reject"
                 press=".onDeleteSelected" />
-                 <Button
-            id="btnExport"
-            text="Export"
-            icon="sap-icon://excel-attachment"
-            type="Transparent"
-            press=".onExportExcel" />
-            <!-- <ObjectStatus id="_IDGenObjectStatus"
-                text="Ready"
-                state="Success" /> -->
+            <Button
+                id="btnExport"
+                text="Export"
+                icon="sap-icon://excel-attachment"
+                type="Transparent"
+                press=".onExportExcel" />
         </OverflowToolbar>
     </headerToolbar>
 
@@ -165,9 +160,9 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
             <Text id="_IDGenText1" text="Material" />
         </Column>
 
-         <Column id="_IDGenColumnResItem" width="8rem" importance="High">
-        <Text id="_IDGenTextResItemHdr" text="Reservation Item" />
-    </Column>
+        <Column id="_IDGenColumnResItem" width="8rem" importance="High">
+            <Text id="_IDGenTextResItemHdr" text="Reservation Item" />
+        </Column>
 
         <Column id="_IDGenColumn2" width="12rem" importance="Low">
             <Text id="_IDGenText2" text="Description" />
@@ -181,6 +176,16 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
             <Text id="_IDGenText4" text="Req UoM" />
         </Column>
 
+        <!-- NEW: Total Issued Qty -->
+        <Column id="_IDGenColumnTotIss" width="8rem" hAlign="End" importance="High">
+            <Text id="_IDGenTextTotIssHdr" text="Total Issued Qty" />
+        </Column>
+
+        <!-- NEW: Pending Qty -->
+        <Column id="_IDGenColumnPending" width="7rem" hAlign="End" importance="High">
+            <Text id="_IDGenTextPendingHdr" text="Pending Qty" />
+        </Column>
+
         <Column id="_IDGenColumn5" width="9rem" importance="High">
             <Text id="_IDGenText5" text="From Batch" />
         </Column>
@@ -190,12 +195,12 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
         </Column>
 
         <Column id="_IDGenColumn7" width="8rem" importance="High">
-            <Text id="_IDGenText7" text="Issued Qty" />
+            <Text id="_IDGenText7" text="Qty To Issue" />
         </Column>
 
-        <Column id="_IDGenColumn8" width="6rem" importance="High">
+        <!-- <Column id="_IDGenColumn8" width="6rem" importance="High">
             <Text id="_IDGenText8" text="Issue UoM" />
-        </Column>
+        </Column> -->
 
         <Column id="_IDGenColumn9" width="8rem" importance="High">
             <Text id="_IDGenText9" text="Issue Location" />
@@ -235,6 +240,15 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
 
                 <Text id="_IDGenText15" text="{local>reqUom}" />
 
+                <!-- NEW: Total Issued Qty -->
+                <ObjectNumber id="_IDGenObjNumTotIss"
+                    number="{local>totalIssuedQty}" />
+
+                <!-- NEW: Pending Qty -->
+                <ObjectNumber id="_IDGenObjNumPending"
+                    number="{local>pendingQty}"
+                    state="Warning" />
+
                 <Input id="_IDGenInput4"
                     value="{local>batch}"
                     placeholder="Scan / Enter Batch"
@@ -253,7 +267,7 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
                 <Input id="_IDGenInput6"
                     value="{local>issuedQty}"
                     type="Number"
-                    placeholder="Issued Qty"
+                    placeholder="Qty To Issue"
                     width="100%"
                     liveChange=".onIssuedQtyChange"
                     change=".onIssuedQtyChange" />
@@ -263,8 +277,7 @@ class="sapUiSmallMarginTop sapUiSmallMarginBottom" />
                 <Input id="_IDGenInput7"
                     value="{local>issueLocation}"
                     placeholder="Issue Location"
-                    width="100%"
-                    change=".onIssueLocationChange" />
+                    width="100%" />
 
                 <Text id="_IDGenText17" text="{local>receivingLocation}" />
 
@@ -299,7 +312,7 @@ text="Submit"
 icon="sap-icon://accept"
 type="Emphasized"
 press=".onSubmit" />
- 
+
 </OverflowToolbar>
 </footer>
 </Page>
